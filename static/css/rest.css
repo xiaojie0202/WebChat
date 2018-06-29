@@ -1,0 +1,37 @@
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-size: 12px;
+}
+
+ul li {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+body {
+    background: url(/static/img/login_bgi.jpg) no-repeat 0 0;
+    background-size: 1920px 1080px;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+/* 滚动条整体宽度 */
+::-webkit-scrollbar-track {
+    background-color: #2e3238;
+}
+
+/* 滚动条的滑轨背景颜色 */
+::-webkit-scrollbar-thumb {
+    background-color: #5bc0de;
+    border-radius: 2px;
+}

@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block meta %}{% endblock %}
+{% block title %}{% endblock %}
+{% block style %}
+    <style>
+        .main {
+            margin-top: 5%;
+            margin-left: 15%;
+            width: 70%;
+            height: 80%;
+            padding: 1%;
+
+        }
+
+        .left-conn {
+            width: 30%;
+            height: 100%;
+            float: left;
+            background-color: #2e3238;
+            border-top-left-radius: 2%;
+            border-bottom-left-radius: 2%;
+        }
+
+        .right-con {
+            width: 70%;
+            height: 100%;
+            float: right;
+            background-color: #eeeeee;
+            border-top-right-radius: 2%;
+            border-bottom-right-radius: 2%;
+        }
+
+        .user_info {
+            height: 15%;
+            padding: 5%;
+        }
+
+        .list-group li {
+            height: 10%;
+            color: #eeeeee;
+            background-color: #2e3238;
+        }
+
+        .chat-name {
+            width: 100%;
+            height: 7%;
+            border-bottom: 1px solid #5e5e5e;
+        }
+
+        .chat-panel {
+            position: relative;
+            width: 100%;
+            height: 63%;
+        }
+
+        .chat-input {
+            width: 100%;
+            height: 30%;
+        }
+
+        .list-group-item img {
+            height: 100%;
+        }
+
+        .list-group {
+            margin: 0;
+            height: 100%;
+        }
+
+        .chat-panel .list-group-item {
+            background-color: #eeeeee;
+            border: 0;
+        }
+
+        .chat-panel-msg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+    </style>
+{% endblock %}
+{% block script %}
+    <script>
+        {#针对带有特殊符号的属性#}
+
+        function escapeJquery(srcString) {
+            // 转义之后的结果
+            var escapseResult = srcString;
+
+            // javascript正则表达式中的特殊字符
+            var jsSpecialChars = ["\\", "^", "$", "*", "?", ".", "+", "(", ")", "[",
+                "]", "|", "{", "}"];
+
+            // jquery中的特殊字符,不是正则表达式中的特殊字符
+            var jquerySpecialChars = ["~", "`", "@", "#", "%", "&", "=", "'", "\"",
+                ":", ";", "<", ">", ",", "/"];
+
+            for (var i = 0; i < jsSpecialChars.length; i++) {
+                escapseResult = escapseResult.replace(new RegExp("\\"
+                    + jsSpecialChars[i], "g"), "\\"
+                    + jsSpecialChars[i]);
+            }
+
+            for (var i = 0; i < jquerySpecialChars.length; i++) {
+                escapseResult = escapseResult.replace(new RegExp(jquerySpecialChars[i],
+                    "g"), "\\" + jquerySpecialChars[i]);
+            }
+
+            return escapseResult;
+        }
+
+        function InitSize() {
+            $('body').height(window.innerHeight).width(window.innerWidth);
+        }
+
+        {#检查是否有消息#}
+
+        function get_msg() {
+            $.ajax({
+                url: '/getmsg',
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (data) {
+                    //{'msgtype': 1, 'Content': '你知道啥', 'FromUserName': '@d72fa6eb0149382b86885c308b467f89e4f4db2898a9c343322d0618fba58f8a', 'ctime': '19:24'}
+                    /**
+                     * {
+                        'msgtype': 3,
+                        'FromUserName': '@297b04adf91f1fbc591fbee94c17bfc9',
+                        'ctime': '19:36',
+                        'title': '为您搜索到498553个"134"相关商品',
+                        'Content': '.....................',
+                        'url': 'http://wq.jd.com/search/search?key=134&amp;PTAG=17005.11.1'
+                    }*/
+                    if (data.msg) {
+                        $.each(data.data, function (index, item) {
+                            var FromUserName = item.FromUserName;
+                            var ctime = item.ctime;
+                            var Contend = item.Content;
+                            //联系人 li
+                            lxr_li = $('#' + escapeJquery(FromUserName));
+                            llx_zwf = $('#zwf');
+                            llx_zwf.after(lxr_li);
+                            lxr_li.children('h6').css('color', 'red');
+                            lxr_header = lxr_li.children('img').attr('src');
+                            //联系人面板
+                            lxr_panel = $('ul[ulpanelname=' + escapeJquery(FromUserName) + ']');
+                            if (item.msgtype === 1) {
+                                panelLi = "<li class=\"list-group-item\"><img src=" + lxr_header + " alt=\"头像\" class=\"img-responsive img-rounded pull-left\"><div class=\"alert alert-success pull-left\" role=\"alert\" style=\"margin: 0; padding: 0\">" + ctime + "::" + Contend + "</div></li>"
+                                lxr_panel.append(panelLi);
+
+                            } else if (item.msgtype === 2) {
+                                //{'msgtype': 2, 'Conten': '123', 'FromUserName': '@@937378c5a165c5282871edc894fbabef171eecdba749cf68eb40209a531e755e', 'ctime': '19:27', 'SendUser': '@d72fa6eb0149382b86885c308b467f89e4f4db2898a9c343322d0618fba58f8a'}
+                                senduser = $('#' + escapeJquery(item.SendUser));
+                                send_name = senduser.attr('nickname');
+                                send_img = senduser.children('img').attr('src');
+                                panelLi = "<li class=\"list-group-item\"><img src=" + send_img + " alt=\"头像\" class=\"img-responsive img-rounded pull-left\"><div class=\"alert alert-success pull-left\" role=\"alert\" style=\"margin: 0; padding: 0\">" + send_name + ctime + "</br>" + Contend + "</div></li>"
+                                lxr_panel.append(panelLi);
+                            } else if (item.msgtype === 3) {
+
+                            }
+                            console.log(Contend)
+                        })
+                    }
+                    {#console.log(data);#}
+                    get_msg()
+                }
+            });
+        }
+
+
+        $(function () {
+            InitSize();
+            get_msg();
+            $(window).resize(function () {          //当浏览器大小变化时
+                InitSize()
+            });
+
+            {#点击联系人#}
+            $('#lxr-list li').click(function () {
+                user_id = $(this).attr('id');
+                nickname = $(this).attr('nickname');
+                $(this).children('h6').css('color', '#fff');
+                $('#to-username').html(nickname);
+                $('#to-username').attr('userid', user_id);
+
+                $('div[panelname=' + escapeJquery(user_id) + ']').show().siblings().hide();
+                console.log({'user_id': 'msg' + user_id, 'nickname': nickname});
+                return
+            });
+            {#发送信息   #}
+            $('#send-msg').click(function () {
+                formuser = $('#self-username').attr('value');
+                to = $('#to-username').attr('userid');
+                content = $('#text-content').val();
+                elemettext = "<li class=\"list-group-item\"><img src=" + $('#self-headimg').attr('src') + " alt=\"头像\" class=\"img-responsive img-rounded pull-right\"> " +
+                    "<div class=\"alert alert-success pull-right\" role=\"alert\" style=\"margin: 0; padding: 0\">" + content + "</div></li>";
+                $.ajax({
+                    url: '/send',
+                    type: 'POST',
+                    dataType: 'JSON',
+                    data: {'formuser': formuser, 'to': to, 'content': content},
+                    success: function (data) {
+                        $('ul[ulpanelname=' + escapeJquery(to) + ']').append(elemettext);
+                        $('#text-content').val('');
+                    }
+                })
+            });
+
+        });
+    </script>
+{% endblock %}
+{% block boby %}
+    <div class="main">
+        <div class="left-conn">
+            {#        个人信息#}
+            <div class="user_info">
+                <img style="height: 95%" src="{{ img_base64(init_dict.User.HeadImgUrl) }}" alt="头像"
+                     class="img-responsive img-rounded pull-left" id="self-headimg">
+                <span style="display: block; color: #eeeeee; font-size: 20px;padding-left: 5%;padding-top: 2%"
+                      class="pull-left">{{ init_dict.User.NickName }}</span>
+            </div>
+            <hr style="margin: 0">
+            {#            所有联系人#}
+            <div class="row pre-scrollable" style="margin: 0; max-height:85%;height: 85%">
+                <ul class="list-group" id="lxr-list">
+                    <input type="hidden" id="zwf">
+                    {% for user in user_dict['MemberList'] %}
+                        {#                    {% for user in init_dict['ContactList'] %}#}
+                        <li class="list-group-item" id="{{ user.UserName }}" nickname="{{ user.NickName |safe }}">
+                            <img src="{{ img_base64(user.HeadImgUrl) }}"
+                                 alt="头像" class="img-responsive img-rounded pull-left">
+                            <h6 style="padding-left: 20px; font-size: 20px;display: inline-block;margin: 0">
+                                <span>{{ user.NickName |safe }}</span>
+                                <small> {{ user.Province }}{{ user.City }}</small>
+                            </h6>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="right-con">
+            <div class="chat-name">
+                <h2 style="margin: 0;text-align: center; font-size: 16px; padding-top: 1%" id="to-username">联系人姓名</h2>
+            </div>
+
+            <div class="chat-panel">
+                {% for user in user_dict['MemberList'] %}
+{#                {% for user in init_dict['ContactList'] %}#}
+                    <div class="row pre-scrollable chat-panel-msg"
+                         style="margin: 0; max-height:100%;height: 100%;width: 100%; display: none"
+                         panelname="{{ user.UserName }}">
+                        <ul class="list-group" id="chat-text" ulpanelname="{{ user.UserName }}">
+                            {#                            #}
+                            {##}
+                            {#                            <li class="list-group-item">#}
+                            {#                                <img src="/123.jpg" alt="头像" class="img-responsive img-rounded pull-right">#}
+                            {#                                <div class="alert alert-success pull-right" role="alert" style="margin: 0; padding: 0">这是一条消息一条消息一条消息一条消息一条消息</div>#}
+                            {#                            </li>#}
+
+                        </ul>
+                    </div>
+                {% endfor %}
+
+
+            </div>
+            <div class="chat-input">
+                <textarea style="width: 100%; height: 80%;resize: none;" id="text-content"></textarea>
+                <input type="hidden" value="{{ init_dict.User.UserName }}" id="self-username">
+                <button type="button" class="btn btn-success pull-right" style="margin-right: 5%" id="send-msg">
+                    发送（Send）
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
